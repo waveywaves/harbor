@@ -120,7 +120,10 @@ Repo Not Exist
 
 Filter Repo
     [Arguments]  ${pro_name}  ${repo_name}  ${exsit}=${true}
-    Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
+    ${filter_dist_input_visible}=  Run Keyword and Return Status  Element Should Not Be Visible  ${filter_dist_input}
+    IF  ${filter_dist_input_visible}
+        Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
+    END
     Retry Clear Element Text  ${filter_dist_input}
     Retry Text Input  ${filter_dist_input}  ${pro_name}/${repo_name}
     Run Keyword If  ${exsit}==${true}    Repo Exist  ${pro_name}  ${repo_name}
@@ -372,13 +375,29 @@ Back Project Home
     [Arguments]  ${project_name}
     Retry Link Click  //a[contains(.,'${project_name}')]
 
-Should Not Be Signed By Cosign
+Should Be Signed
+    [Arguments]  ${tag}
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
+
+Should Not Be Signed
     [Arguments]  ${tag}
     Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'color-red')]
 
 Should Be Signed By Cosign
-    [Arguments]  ${tag}
-    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
+    [Arguments]  ${tag}=${null}  ${digest}=${null}
+    IF  '${tag}' != '${null}'
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/clr-tooltip/div/div/span[contains(.,'${tag}')] and .//clr-dg-row[.//img[@title='signature.cosign']]]
+    ELSE
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${digest}')] and .//clr-dg-row[.//img[@title='signature.cosign']]]
+    END
+
+Should Be Signed By Notation
+    [Arguments]  ${tag}=${null}  ${digest}=${null}
+    IF  '${tag}' != '${null}'
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/clr-tooltip/div/div/span[contains(.,'${tag}')] and .//clr-dg-row[.//img[@title='signature.notation']]]
+    ELSE
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${digest}')] and .//clr-dg-row[.//img[@title='signature.notation']]]
+    END
 
 Delete Accessory
     [Arguments]  ${tag}
